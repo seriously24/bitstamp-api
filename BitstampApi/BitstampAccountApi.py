@@ -2,7 +2,7 @@
     Based on official doc : https://www.bitstamp.net/api/
     Private API
 """
-from .BitstampBaseHttpApi import BitstampBaseHttpApi
+from .BitstampBaseApi import BitstampBaseApi
 import hmac
 import hashlib
 import time
@@ -18,7 +18,7 @@ class BitstampAccountApi:
         """
         self.api_key = api_key
         self.customer_id = customer_id
-        self.bitstamp_base_http_api = BitstampBaseHttpApi()
+        self.bitstamp_base_http_api = BitstampBaseApi()
         self.api_secret = api_secret
 
     def account_balance(self, currency_pair):
@@ -36,7 +36,7 @@ class BitstampAccountApi:
 
     def order_status(self, order_id):
         endpoint = '/order_status/'
-        return self.send_private_request(endpoint, additional_data={'id': order_id}, v2=False)
+        return self.send_private_request(endpoint, additional_data={'id': order_id}, version=1)
 
     def cancel_order(self, order_id):
         endpoint = '/cancel_order/'
@@ -44,7 +44,7 @@ class BitstampAccountApi:
 
     def cancel_all_orders(self):
         endpoint = '/cancel_all_orders/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def buy_limit_order(self, currency_pair, amount, price, limit_price, daily_order=True):
         endpoint = '/buy/{currency_pair}/'.format(currency_pair=currency_pair)
@@ -71,58 +71,58 @@ class BitstampAccountApi:
     def bitcoin_withdrawal(self, amount, address, instant=True):
         endpoint = '/bitcoin_withdrawal/'
         additional_data = {'amount': amount, 'address': address, 'instant': 1 if instant else 0}
-        return self.send_private_request(endpoint, additional_data=additional_data, v2=False)
+        return self.send_private_request(endpoint, additional_data=additional_data, version=1)
 
     def bitcoin_deposit_address(self):
         endpoint = '/bitcoin_deposit_address/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def unconfirmed_bitcoin_deposits(self):
         endpoint = '/unconfirmed_btc/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def litecoin_withdrawal(self, amount, address):
         endpoint = '/ltc_withdrawal/'
         additional_data = {'amount': amount, 'address': address}
-        return self.send_private_request(endpoint, additional_data=additional_data, v2=False)
+        return self.send_private_request(endpoint, additional_data=additional_data, version=1)
 
     def litecoin_deposit_address(self):
         endpoint = '/ltc_address/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def eth_withdrawal(self, amount, address):
         endpoint = '/eth_withdrawal/'
         additional_data = {'amount': amount, 'address': address}
-        return self.send_private_request(endpoint, additional_data=additional_data, v2=False)
+        return self.send_private_request(endpoint, additional_data=additional_data, version=1)
 
     def eth_deposit_address(self):
         endpoint = '/eth_address/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def ripple_withdrawal(self, amount, address, currency):
         endpoint = '/ripple_withdrawal/'
         additional_data = {'amount': amount, 'address': address, 'currency': currency}
-        return self.send_private_request(endpoint, additional_data=additional_data, v2=False)
+        return self.send_private_request(endpoint, additional_data=additional_data, version=1)
 
     def ripple_deposit_address(self):
         endpoint = '/ripple_address/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def bch_withdrawal(self, amount, address):
         endpoint = '/bch_withdrawal/'
         additional_data = {'amount': amount, 'address': address}
-        return self.send_private_request(endpoint, additional_data=additional_data, v2=False)
+        return self.send_private_request(endpoint, additional_data=additional_data, version=1)
 
-    def bch_address(self):
+    def bch_deposit_address(self):
         endpoint = '/bch_address/'
-        return self.send_private_request(endpoint, v2=False)
+        return self.send_private_request(endpoint, version=1)
 
     def transfer_to_main(self, amount, currency, sub_account=''):
         endpoint = '/transfer-to-main/'
         additional_data = {'amount': amount, 'currency': currency}
         if sub_account:
             additional_data['subAccount'] = sub_account
-        return self.send_private_request(endpoint, additional_data=additional_data, v2=False)
+        return self.send_private_request(endpoint, additional_data=additional_data, version=1)
 
     def xrp_withdrawal(self, amount, address, destination_tag=''):
         endpoint = '/xrp_withdrawal/'
@@ -178,14 +178,13 @@ class BitstampAccountApi:
             additional_data['address'] = address
         return self.send_private_request(endpoint, additional_data=additional_data)
 
-    def send_private_request(self, endpoint, method='POST', v2=True, additional_data={}):
+    def send_private_request(self, endpoint, method='POST', version=2, additional_data={}):
         """
         Sends a request to Bitstamp's privare API with the needed base info (key, signature, nonce) built automatically
         :param endpoint: Bitstamp's API endpoint
         :param method: HTTP method to be used, usually POST
-        :param v2: True if the call should be done on Bitstamp's V2 api
+        :param version: Version number of the bitstamp API
         :param additional_data: Any other additional data than the usual key, signature and nonce
-        :return:
         """
         nonce = time.time()
         sig = self._build_signature(nonce)
@@ -195,7 +194,7 @@ class BitstampAccountApi:
             for i, x in additional_data.items():
                 base_data[i] = x
 
-        return self.bitstamp_base_http_api.send_request(endpoint, method=method, data=base_data, v2=v2)
+        return self.bitstamp_base_http_api.send_request(endpoint, method=method, data=base_data, version=version)
 
     def _build_signature(self, nonce):
         message = bytes(str(nonce), encoding='utf8') + bytes(self.customer_id, encoding='utf-8') + \
