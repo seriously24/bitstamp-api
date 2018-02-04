@@ -31,7 +31,7 @@ class BitstampAccountApi:
         return self.send_private_request(endpoint, additional_data=additional_data)
 
     def open_orders(self, currency_pair):
-        endpoint = '/v2/open_orders/{currency_pair}'.format(currency_pair=currency_pair)
+        endpoint = '/open_orders/{currency_pair}'.format(currency_pair=currency_pair)
         return self.send_private_request(endpoint)
 
     def order_status(self, order_id):
@@ -88,7 +88,7 @@ class BitstampAccountApi:
 
     def litecoin_deposit_address(self):
         endpoint = '/ltc_address/'
-        return self.send_private_request(endpoint, version=1)
+        return self.send_private_request(endpoint)
 
     def eth_withdrawal(self, amount, address):
         endpoint = '/eth_withdrawal/'
@@ -97,7 +97,7 @@ class BitstampAccountApi:
 
     def eth_deposit_address(self):
         endpoint = '/eth_address/'
-        return self.send_private_request(endpoint, version=1)
+        return self.send_private_request(endpoint)
 
     def ripple_withdrawal(self, amount, address, currency):
         endpoint = '/ripple_withdrawal/'
@@ -115,7 +115,7 @@ class BitstampAccountApi:
 
     def bch_deposit_address(self):
         endpoint = '/bch_address/'
-        return self.send_private_request(endpoint, version=1)
+        return self.send_private_request(endpoint)
 
     def transfer_to_main(self, amount, currency, sub_account=''):
         endpoint = '/transfer-to-main/'
@@ -186,7 +186,7 @@ class BitstampAccountApi:
         :param version: Version number of the bitstamp API
         :param additional_data: Any other additional data than the usual key, signature and nonce
         """
-        nonce = time.time()
+        nonce = int(time.time() * 10e6)
         sig = self._build_signature(nonce)
         base_data = {'key': self.api_key, 'signature': sig, 'nonce': nonce}
 
@@ -199,5 +199,5 @@ class BitstampAccountApi:
     def _build_signature(self, nonce):
         message = bytes(str(nonce), encoding='utf8') + bytes(self.customer_id, encoding='utf-8') + \
                   bytes(self.api_key, encoding='utf-8')
-        signature = hmac.new(self.api_secret, msg=message, digestmod=hashlib.sha256).hexdigest().upper()
+        signature = hmac.new(bytes(self.api_secret, 'utf-8'), msg=message, digestmod=hashlib.sha256).hexdigest().upper()
         return signature

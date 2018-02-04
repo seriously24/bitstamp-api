@@ -99,4 +99,4 @@ class BitstampBaseApi:
         :return: Buy and Sell conversion rate
         """
         endpoint = '/eur_usd/'
-        return self.send_request(endpoint)
+        return self.send_request(endpoint, version=1)

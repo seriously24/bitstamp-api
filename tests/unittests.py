@@ -60,24 +60,22 @@ class TestBitstampBaseApi(unittest.TestCase):
 class TestBitstampPrivateApi(unittest.TestCase):
     """ Only for methods without any impact on the account. i.e no test for sell market order """
     def setUp(self):
-        self.bitstamp_private_api = BitstampAccountApi('customer_id', 'api_key', 'api_secret')
+        import getpass
+        customer_id = input('Customer ID : ')
+        api_key = getpass.getpass('API Key : ')
+        secret_key = getpass.getpass('Secret Key : ')
+        self.bitstamp_private_api = BitstampAccountApi(customer_id, api_key, secret_key)
 
     def test_account_balance(self):
         data = self.bitstamp_private_api.account_balance('btcusd')
         self.assertTrue(isinstance(data, dict))
-        expected_keys = ['usd_balance','btc_balance','eur_balance','xrp_balance','usd_reserved','btc_reserved','eur_reserved','xrp_reserved','usd_available', 'btc_available','eur_available','xrp_available','btcusd_fee','btceur_fee','eurusd_fee','xrpusd_fee','xrpeur_fee','xrpbtc_fee','fee']
+        expected_keys = ['usd_balance','btc_balance','btc_reserved','usd_available','btc_available','fee', 'usd_reserved']
         self._check_keys_in_data(data, expected_keys)
 
     def test_user_transactions(self):
         data = self.bitstamp_private_api.user_transactions('btcusd')
         self.assertTrue(isinstance(data, list))
         expected_keys = ['datetime','id','type','usd','eur','btc','xrp','btc_usd','fee','order_id']
-        self._check_keys_in_data(data, expected_keys)
-
-    def test_open_orders(self):
-        data = self.bitstamp_private_api.open_orders('btcusd')
-        self.assertTrue(isinstance(data, list))
-        expected_keys = ['id','datetime','type','price','amount','currency_pair','Response','status','reason']
         self._check_keys_in_data(data, expected_keys)
 
     def test_withdrawal_requests(self):
@@ -88,11 +86,15 @@ class TestBitstampPrivateApi(unittest.TestCase):
 
     def test_litecoin_deposit_address(self):
         data = self.bitstamp_private_api.litecoin_deposit_address()
-        self.assertTrue(isinstance(data, str))
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
 
     def test_eth_deposit_address(self):
         data = self.bitstamp_private_api.eth_deposit_address()
-        self.assertTrue(isinstance(data, str))
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
 
     def test_bitcoin_deposit_address(self):
         data = self.bitstamp_private_api.bitcoin_deposit_address()
@@ -104,15 +106,21 @@ class TestBitstampPrivateApi(unittest.TestCase):
 
     def test_ripple_deposit_address(self):
         data = self.bitstamp_private_api.ripple_deposit_address()
-        self.assertTrue(isinstance(data, str))
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
 
     def test_bch_deposit_address(self):
         data = self.bitstamp_private_api.bch_deposit_address()
-        self.assertTrue(isinstance(data, str))
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
 
     def test_xrp_deposit_address(self):
         data = self.bitstamp_private_api.xrp_deposit_address()
-        self.assertTrue(isinstance(data, str))
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
 
     def _check_keys_in_data(self, data, expected_keys):
         if isinstance(data, dict):
