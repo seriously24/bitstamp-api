@@ -5,6 +5,8 @@
 import requests
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class BitstampBaseApi:
     def __init__(self):
@@ -12,7 +14,6 @@ class BitstampBaseApi:
             1: 'https://www.bitstamp.net/api',
             2: 'https://www.bitstamp.net/api/v2'
         }
-        self.logger = logging.getLogger(__name__)
 
     def send_request(self, endpoint, method='GET', json_response=True, version=2, **kwargs):
         """
@@ -32,14 +33,14 @@ class BitstampBaseApi:
         try:
             r = requests.request(method=method, url=base_url + endpoint, **kwargs)
         except requests.RequestException as e:
-            self.logger.error('Error while accessing Bitstamp HTTP API : {}'.format(e))
+            logger.error('Error while accessing Bitstamp HTTP API : {}'.format(e))
             return
 
         if json_response:
             try:
                 return r.json()
             except Exception as e:
-                self.logger.error('Not a valid json response from Bitstamp : {}'.format(r))
+                logger.error('Not a valid json response from Bitstamp : {}'.format(r))
                 return
         else:
             return r
@@ -51,6 +52,7 @@ class BitstampBaseApi:
         :return: Last, Bid, Ask, etc.
         :rtype: dict
         """
+        logger.debug("Retrieve the ticker for {}".format(currency_pair))
         endpoint = '/ticker/{currency_pair}/'.format(currency_pair=currency_pair)
         return self.send_request(endpoint)
 
@@ -61,6 +63,7 @@ class BitstampBaseApi:
         :return: Last, Bid, Ask, etc.
         :rtype: dict
         """
+        logger.debug("Retrieve the {} Hourly Ticker".format(currency_pair))
         endpoint = '/ticker_hour/{currency_pair}/'.format(currency_pair=currency_pair)
         return self.send_request(endpoint)
 
@@ -71,6 +74,7 @@ class BitstampBaseApi:
         :return: Order book
         :rtype: dict
         """
+        logger.debug("Retrieve the current {} order book".format(currency_pair))
         endpoint = '/order_book/{currency_pair}/'.format(currency_pair=currency_pair)
         return self.send_request(endpoint)
 
@@ -81,6 +85,7 @@ class BitstampBaseApi:
         :param time:
         :return:
         """
+        logger.debug("Retrieve the last transactions for {} from within the last {}".format(currency_pair, time))
         endpoint = '/transactions/{currency_pair}?&time={time}'.format(currency_pair=currency_pair, time=time)
         return self.send_request(endpoint)
 
@@ -90,6 +95,7 @@ class BitstampBaseApi:
         :return: Name, url_symbol, base_decimals, counter_decimals, minimum_order, trading, description
         :rtype: dict
         """
+        logger.debug("Retrieve all pairs info")
         endpoint = '/trading-pairs-info/'
         return self.send_request(endpoint)
 
@@ -98,5 +104,6 @@ class BitstampBaseApi:
         EUR/USD conversation rate
         :return: Buy and Sell conversion rate
         """
+        logger.debug("Retrieve EUR/USD conversion rate")
         endpoint = '/eur_usd/'
         return self.send_request(endpoint, version=1)
