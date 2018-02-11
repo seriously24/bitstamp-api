@@ -1,12 +1,11 @@
 import unittest
-from BitstampApi.BitstampBaseHttpApi import BitstampBaseHttpApi
-# from BitstampApi.BitstampAccountApi import BitstampAccountApi
-# TODO : Implements tests for private API too
+from BitstampApi.BitstampBaseApi import BitstampBaseApi
+from BitstampApi.BitstampAccountApi import BitstampAccountApi
 
 
-class TestBitstampBaseHttpApi(unittest.TestCase):
+class TestBitstampBaseApi(unittest.TestCase):
     def setUp(self):
-        self.bitstamp_api = BitstampBaseHttpApi()
+        self.bitstamp_api = BitstampBaseApi()
 
     def test_ticker(self):
         data = self.bitstamp_api.ticker('btcusd')
@@ -57,6 +56,82 @@ class TestBitstampBaseHttpApi(unittest.TestCase):
         for key in needed_keys:
             self.assertTrue(key in data)
 
+
+class TestBitstampPrivateApi(unittest.TestCase):
+    """ Only for methods without any impact on the account. i.e no test for sell market order """
+    def setUp(self):
+        import getpass
+        customer_id = input('Customer ID : ')
+        api_key = getpass.getpass('API Key : ')
+        secret_key = getpass.getpass('Secret Key : ')
+        self.bitstamp_private_api = BitstampAccountApi(customer_id, api_key, secret_key)
+
+    def test_account_balance(self):
+        data = self.bitstamp_private_api.account_balance('btcusd')
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['usd_balance','btc_balance','btc_reserved','usd_available','btc_available','fee', 'usd_reserved']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_user_transactions(self):
+        data = self.bitstamp_private_api.user_transactions('btcusd')
+        self.assertTrue(isinstance(data, list))
+        expected_keys = ['datetime','id','type','usd','eur','btc','xrp','btc_usd','fee','order_id']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_withdrawal_requests(self):
+        data = self.bitstamp_private_api.withdrawal_requests()
+        self.assertTrue(isinstance(data, list))
+        expected_keys = ['id','datetime','type','currency','amount','status']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_litecoin_deposit_address(self):
+        data = self.bitstamp_private_api.litecoin_deposit_address()
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_eth_deposit_address(self):
+        data = self.bitstamp_private_api.eth_deposit_address()
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_bitcoin_deposit_address(self):
+        data = self.bitstamp_private_api.bitcoin_deposit_address()
+        self.assertTrue(isinstance(data, str))
+
+    def test_unconfirmed_bitcoin_deposits(self):
+        data = self.bitstamp_private_api.unconfirmed_bitcoin_deposits()
+        self.assertTrue(isinstance(data, list))
+
+    def test_ripple_deposit_address(self):
+        data = self.bitstamp_private_api.ripple_deposit_address()
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_bch_deposit_address(self):
+        data = self.bitstamp_private_api.bch_deposit_address()
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
+
+    def test_xrp_deposit_address(self):
+        data = self.bitstamp_private_api.xrp_deposit_address()
+        self.assertTrue(isinstance(data, dict))
+        expected_keys = ['address']
+        self._check_keys_in_data(data, expected_keys)
+
+    def _check_keys_in_data(self, data, expected_keys):
+        if isinstance(data, dict):
+            for key in expected_keys:
+                self.assertTrue(key in data)
+        elif isinstance(data, list):
+            for item in data:
+                for key in expected_keys:
+                    self.assertTrue(key in item)
+        else:
+            raise AssertionError("Data not a dict or list")
 
 if __name__ == '__main__':
     unittest.main()
